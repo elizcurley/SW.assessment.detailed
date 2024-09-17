@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Work Interests Assessment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            width: 20%;
+        }
+        .option input {
+            margin-right: 5px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0.5;
+            font-size: 14px;
+            color: #888;
+            pointer-events: none;
+        }
+        #continuum {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, #ff9999, #99ff99, #9999ff);
+            margin-top: 20px;
+            position: relative;
+        }
+        #marker {
+            width: 10px;
+            height: 40px;
+            background-color: black;
+            position: absolute;
+            top: -5px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .watermark {
+                position: static;
+                text-align: right;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Social Work Interests Assessment</h1>
+    <p>Rate your interest in developing the following skills or affecting these types of changes:</p>
+    <div id="quiz"></div>
+    <button onclick="calculateResult()" class="no-print">Submit</button>
+    <div id="result"></div>
+    <div class="watermark">Elizabeth Curley, MSW</div>
+
+    <script>
+        const questions = [
+            {
+                text: "Improving your active listening skills and ability to pick up on non-verbal cues in conversations.",
+                category: "micro"
+            },
+            {
+                text: "Analyzing complex social issues and understanding their root causes.",
+                category: "macro"
+            },
+            {
+                text: "Developing skills in facilitating group discussions and mediating conflicts.",
+                category: "mezzo"
+            },
+            {
+                text: "Becoming proficient in public speaking and presenting information to large audiences.",
+                category: "macro"
+            },
+            {
+                text: "Learning techniques to help individuals set and achieve personal goals.",
+                category: "micro"
+            },
+            {
+                text: "Conducting research and interpreting data to inform decision-making in social programs.",
+                category: "macro"
+            },
+            {
+                text: "Building and maintaining relationships with diverse groups of people in a community setting.",
+                category: "mezzo"
+            },
+            {
+                text: "Enhancing your ability to provide emotional support and empathy in one-on-one situations.",
+                category: "micro"
+            },
+            {
+                text: "Studying how laws and policies affect different communities and proposing changes.",
+                category: "macro"
+            },
+            {
+                text: "Organizing and coordinating community events or programs.",
+                category: "mezzo"
+            },
+            {
+                text: "Developing the ability to adapt your communication style to suit different individuals' needs.",
+                category: "micro"
+            },
+            {
+                text: "Creating strategies to address systemic social issues on a large scale.",
+                category: "macro"
+            },
+            {
+                text: "Learning to identify and mobilize community resources for collective benefit.",
+                category: "mezzo"
+            },
+            {
+                text: "Advocating for individuals who are facing personal challenges within various systems.",
+                category: "micro"
+            },
+            {
+                text: "Evaluating the impact of social programs and interventions to improve their effectiveness.",
+                category: "macro"
+            },
+            {
+                text: "Fostering collaboration between different organizations or groups to achieve common goals.",
+                category: "mezzo"
+            },
+            {
+                text: "Developing expertise in helping individuals navigate complex systems or bureaucracies.",
+                category: "micro"
+            },
+            {
+                text: "Designing and implementing large-scale social initiatives or policy changes.",
+                category: "macro"
+            },
+            {
+                text: "Identifying and nurturing leadership potential in community members.",
+                category: "mezzo"
+            },
+            {
+                text: "Specializing in crisis intervention and trauma-informed care for individuals.",
+                category: "micro"
+            },
+            {
+                text: "Analyzing and interpreting social trends and demographic data to inform policy.",
+                category: "macro"
+            },
+            {
+                text: "Building coalitions and partnerships between different community groups or organizations.",
+                category: "mezzo"
+            },
+            {
+                text: "Helping individuals develop coping strategies and build personal resilience.",
+                category: "micro"
+            },
+            {
+                text: "Influencing public opinion and raising awareness about important social issues.",
+                category: "macro"
+            },
+            {
+                text: "Developing and implementing community education programs on various social topics.",
+                category: "mezzo"
+            }
+        ];
+
+        function createQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        <label class="option"><input type="radio" name="q${index}" value="1"> Not Interested</label>
+                        <label class="option"><input type="radio" name="q${index}" value="2"> Slightly</label>
+                        <label class="option"><input type="radio" name="q${index}" value="3"> Moderately</label>
+                        <label class="option"><input type="radio" name="q${index}" value="4"> Very</label>
+                        <label class="option"><input type="radio" name="q${index}" value="5"> Extremely</label>
+                    </div>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function calculateResult() {
+            let microScore = 0;
+            let mezzoScore = 0;
+            let macroScore = 0;
+
+            questions.forEach((question, index) => {
+                const selectedValue = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selectedValue) {
+                    const value = parseInt(selectedValue.value);
+                    if (question.category === "micro") microScore += value;
+                    else if (question.category === "mezzo") mezzoScore += value;
+                    else if (question.category === "macro") macroScore += value;
+                }
+            });
+
+            const totalQuestions = {
+                micro: questions.filter(q => q.category === "micro").length,
+                mezzo: questions.filter(q => q.category === "mezzo").length,
+                macro: questions.filter(q => q.category === "macro").length
+            };
+
+            const normalizedScores = {
+                micro: (microScore / (totalQuestions.micro * 5)) * 100,
+                mezzo: (mezzoScore / (totalQuestions.mezzo * 5)) * 100,
+                macro: (macroScore / (totalQuestions.macro * 5)) * 100
+            };
+
+            const continuumScore = calculateContinuumScore(normalizedScores);
+            const profile = determineProfile(normalizedScores);
+            const detailedAnalysis = provideDetailedAnalysis(normalizedScores, profile);
+
+            let result = `
+                <h2>Your Social Work Interest Profile</h2>
+                <p><strong>Interest Scores:</strong><br>
+                Micro-level practice: ${normalizedScores.micro.toFixed(2)}%<br>
+                Mezzo-level practice: ${normalizedScores.mezzo.toFixed(2)}%<br>
+                Macro-level practice: ${normalizedScores.macro.toFixed(2)}%</p>
+
+                <h3>Your Position on the Micro-Mezzo-Macro Continuum</h3>
+                <div id="continuum">
+                    <div id="marker" style="left: ${continuumScore}%;"></div>
+                </div>
+                <p style="text-align: center;">
+                    <span style="float: left;">Micro</span>
+                    <span style="display: inline-block;">Mezzo</span>
+                    <span style="float: right;">Macro</span>
+                </p>
+
+                <h3>Your Social Work Interest Profile: ${profile}</h3>
+                ${detailedAnalysis}
+                
+                <button onclick="window.print()" class="no-print">Print Results</button>
+            `;
+
+            document.getElementById('result').innerHTML = result;
+        }
+
+        function calculateContinuumScore(scores) {
+            const total = scores.micro + scores.mezzo + scores.macro;
+            return ((scores.micro * 0) + (scores.mezzo * 50) + (scores.macro * 100)) / total;
+        }
+
+        function determineProfile(scores) {
+            const highestScore = Math.max(scores.micro, scores.mezzo, scores.macro);
+            const threshold = 70;
+
+            if (scores.micro > threshold && scores.macro > threshold) return "Holistic Practitioner";
+            if (scores.micro > threshold && scores.mezzo > threshold) return "Direct Service Specialist";
+            if (scores.mezzo > threshold && scores.macro > threshold) return "Community Policy Advocate";
+            if (scores.micro === highestScore) return "Individual-Focused Practitioner";
+            if (scores.mezzo === highestScore) return "Community-Oriented Practitioner";
+            if (scores.macro === highestScore) return "Policy and Systems Specialist";
+            return "Balanced Practitioner";
+        }
+
+        function provideDetailedAnalysis(scores, profile) {
+            let analysis = "<h3>Detailed Analysis</h3>";
+
+            switch(profile) {
+                case "Holistic Practitioner":
+                    analysis += "<p>You show a strong interest in both micro and macro level social work. This suggests a holistic approach to social issues, seeing the connection between individual experiences and broader societal structures. You might be particularly effective in roles that bridge direct practice with policy advocacy.</p>";
+                    break;
+                case "Direct Service Specialist":
+                    analysis += "<p>Your interests lie strongly in micro and mezzo level practice. You're likely drawn to roles that involve direct interaction with individuals and small groups, possibly in a community context. Consider careers in clinical social work, family therapy, or community-based case management.</p>";
+                    break;
+                case "Community Policy Advocate":
+                    analysis += "<p>With high interests in mezzo and macro practice, you seem oriented towards community-level interventions and policy work. You might excel in roles involving community organizing, program development, or policy analysis that directly impacts local communities.</p>";
+                    break;
+                case "Individual-Focused Practitioner":
+                    analysis += "<p>Your strongest interest is in micro-level practice. You're likely drawn to one-on-one interactions and helping individuals navigate personal challenges. Consider careers in clinical social work, counseling, or case management.</p>";
+                    break;
+                case "Community-Oriented Practitioner":
+                    analysis += "<p>Your interest peaks in mezzo-level practice. You may be most fulfilled working with groups and communities, possibly in roles involving program coordination, community development, or group therapy.</p>";
+                    break;
+                case "Policy and Systems Specialist":
+                    analysis += "<p>Your primary interest lies in macro-level practice. You're likely drawn to addressing large-scale social issues through policy, research, or systemic interventions. Consider roles in policy analysis, social planning, or program evaluation.</p>";
+                    break;
+                default:
+                    analysis += "<p>You show a balanced interest across micro, mezzo, and macro practice. This versatility could be an asset in many social work roles, allowing you to bridge different levels of intervention. You might be well-suited for generalist positions or roles that require a broad understanding of social work practice.</p>";
+            }
+
+            analysis += "<p>Remember, this assessment reflects your current interests, which may evolve with experience and education. All levels of social work practice are interconnected and valuable. Consider exploring areas outside your comfort zone to develop a well-rounded skill set.</p>";
+
+            return analysis;
+        }
+
+        createQuiz();
+    </script>
+</body>
+</html>
